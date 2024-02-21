@@ -10,3 +10,7 @@ Create `tippecanoe` map tiles for British [road and rail](https://anisotropi4.gi
 
 Create `tippecanoe` map tiles rail track and station distance [British rail](https://anisotropi4.github.io/distance/) to for 2011 Census population Output Area
 
+
+## [density](density/README.md)
+
+Create interactive [population density map](https://anisotropi4.github.io/distance/) for Great Britain using 2011 census data
