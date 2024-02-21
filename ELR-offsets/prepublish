@@ -1,0 +1,16 @@
+#!/bin/sh
+
+URL=https://www.whatdotheyknow.com/request/643748/response/1539326/attach/3/
+FILENAME="NetworkLinks v39 WGS84 WKID 4326.csv.txt"
+if [ ! -s  "${FILENAME}" ]; then
+    curl -L -o "${FILENAME}" "${URL}/${FILENAME}"
+fi
+
+for i in shp
+do
+    if [ ! -d ${i} ]; then
+        mkdir ${i}
+    fi
+done
+
+./network-link.py
