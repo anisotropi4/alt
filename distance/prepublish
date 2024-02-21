@@ -1,0 +1,53 @@
+#!/bin/sh
+
+export PYTHONUNBUFFERED=1
+
+for i in download work shp output
+do
+    if [ ! -d ${i} ]; then
+        mkdir -p ${i}
+    fi
+done
+
+URL=https://www.nrscotland.gov.uk/files/geography
+FILENAME=output-area-2011-mhw.zip
+if [ ! -s download/${FILENAME} ]; then
+    curl -L -o download/${FILENAME} ${URL}/${FILENAME}
+fi
+
+if [ ! -s work/OutputArea2011_MHW.shp ]; then
+    (cd work; unzip ../download/${FILENAME})
+fi
+
+URL=https://opendata.arcgis.com/datasets
+#FILENAME=d74074ae6dec4de59fdcd2744fefc1f9_0.zip
+#FILENAME=f79fc19485704ce68523d8d70d84a913_0.zip
+FILENAME=a76b2f87057b43d989d8f01733104d62_0.zip
+if [ ! -s download/${FILENAME} ]; then
+    curl -L -o download/${FILENAME} ${URL}/${FILENAME}
+fi
+
+if [ ! -s work/Output_Areas__December_2011__Boundaries_EW_BGC.shp ]; then    
+    (cd work; unzip ../download/${FILENAME})
+fi
+
+URL=https://researchbriefings.files.parliament.uk/documents/CBP-8322
+FILENAME=oa-classification-csv.csv
+if [ ! -s ${FILENAME} ]; then
+    curl -L -o ${FILENAME} ${URL}/${FILENAME}
+fi
+
+URL=https://gist.githubusercontent.com/anisotropi4/54c29e6e6192cf758e12279e1981e889/raw/9639ccfdc24f6e7a585dc3340d7d9da4e828af5d/
+FILENAME=output-stations.json
+if [ ! -s download/${FILENAME} ]; then
+    curl -L -o download/${FILENAME} ${URL}/${FILENAME}
+fi
+
+if [ ! -s all_density.geojson ]; then
+    pip install -r requirements.txt
+    ./density.py
+fi
+
+if [ ! -d tiles ]; then
+    bin/tippecanoe --no-tile-compression --force -l density -Z5 -z14 --coalesce-smallest-as-needed --extend-zooms-if-still-dropping --detect-shared-borders --coalesce --reorder --hilbert -e tiles all_density.geojson
+fi

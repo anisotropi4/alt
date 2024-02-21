@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	      <title>Population Density and Distance from a Railway Station in Great Britain</title>
+	      <meta charset="utf-8" />
+	      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+        <link rel="stylesheet" href="//azavea.github.io/Leaflet.zoomdisplay/css/leaflet.zoomdisplay.css"/>
+    </head>
+    <body style='margin:0'>
+	      <div id="map" style="width: 100vw; height: 100vh; background: PowderBlue"></div>
+	
+	      <script type="text/javascript"  src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+	      <script type="text/javascript"  src="https://unpkg.com/leaflet.vectorgrid@1.3.0"></script>
+        <script src="//azavea.github.io/Leaflet.zoomdisplay/js/leaflet.zoomdisplay.js"></script>
+	      <script>
+         const minZoom = 5;
+         const maxZoom = 14;
+         var map = L.map('map', {
+             minZoom: minZoom,
+             maxZoom: maxZoom,
+             zoomControl: false,
+         }).setView([55.53, -4.53], 6);
+
+         function get_color(density, distance) {
+             const colours = {
+                 u0: '#ffffff',
+                 u1: '#ffac8f',
+                 u2: '#ff585f',
+                 u3: '#ff642f',
+                 u4: '#ff4000',
+                 v0: '#ffffff',
+                 v1: '#ffe0d5',
+                 v2: '#ffc0ab',
+                 v3: '#ffa080',
+             };
+             if (distance < 5000.0) return colours.v0;
+             if (distance < 10000.0) return colours.v1;
+             if (distance < 32000.0) return colours.v2;
+             return colours.v3;
+         };
+
+         var vectorTileStyling = {
+             density: function (properties, zoom) {
+                 var density = properties.density;
+                 var distance = properties.distance;
+                 var color = get_color(density, distance);
+                 return ({fill: true,
+                          weight: 1.0,
+                          fillColor: color,
+                          color: color,
+                          fillOpacity: 1.0,
+                          opacity: 1.0,
+                          zIndex: 1,
+                 });
+             },
+             station: {
+                 radius: 1.0,
+                 color: "blue",
+                 zIndex: 3,
+             },
+         };
+         var mapUrl = "https://anisotropi4.github.io/distance/tiles/{z}/{x}/{y}.pbf";
+         var mapVectorTileOptions = {
+			       rendererFactory: L.canvas.tile,
+             interactive: true,
+			       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ONS and National Records Scotland<a href="http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"> Open Government License</a>',
+             maxNativeZoom: maxZoom,
+             minZoom: minZoom,
+			       vectorTileLayerStyles: vectorTileStyling,
+         }
+         var mapPbfLayer = L.vectorGrid.protobuf(mapUrl, mapVectorTileOptions).addTo(map);
+         var mapVectorTileOptions = {
+			       rendererFactory: L.canvas.tile,
+             interactive: true,
+			       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy;',
+             maxNativeZoom: maxZoom, // minZoom must be higher than minNativeZoom
+             minZoom: minZoom,
+			       vectorTileLayerStyles: vectorTileStyling,
+         }
+         mapPbfLayer.bindPopup(function (layer) {
+             const lookup = {
+                 "OA11CD": "OA11 code",
+                 "region_name": "Region",
+                 "lsoa_code": "LSOA",
+                 "msoa_code": "MSOA",
+                 "population": "population",
+                 "Area": "area",
+                 "distance": "station distance",
+                 "Station": "station name",
+             };
+             var p = layer.properties;
+             var popupContent = "<b>" + p.Town + "</b>";
+             p.Area = Math.round(p.Area);
+             for (var [k, v] of Object.entries(p)) {
+                 if (k == 'Area') v = Math.round(v / 100.0) / 100.0 + ' Ha';
+                 if (k == 'distance') v = Math.round(v / 100.0) / 10.0 + ' km';
+                 if (k in lookup) popupContent += "<br>" + lookup[k] + ": " + v;
+             }
+             return popupContent;
+         });
+         var zoomcontrol = new L.Control.Zoom({ position: 'bottomright' }).addTo(map)
+	      </script>
+    </body>
+</html>
