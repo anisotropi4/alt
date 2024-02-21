@@ -1,0 +1,10 @@
+#!/bin/sh
+
+for i in shp
+do
+    if [ ! -d ${i} ]; then
+        mkdir ${i}
+    fi
+done
+
+./osmnxget.py --shpfiles
