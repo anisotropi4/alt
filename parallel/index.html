@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	      <title>Railway and Trunk Roads in Great Britain</title>
+	      <meta charset="utf-8" />
+	      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+        <link rel="stylesheet" href="//azavea.github.io/Leaflet.zoomdisplay/css/leaflet.zoomdisplay.css"/>
+    </head>
+    <body style='margin:0'>
+	      <div id="map" style="width: 100vw; height: 100vh; background: PowderBlue"></div>
+	      
+	      <script type="text/javascript"  src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+	      <script type="text/javascript"  src="https://unpkg.com/leaflet.vectorgrid@1.3.0"></script>
+        <script src="//azavea.github.io/Leaflet.zoomdisplay/js/leaflet.zoomdisplay.js"></script>
+	      <script>
+         const minZoom = 5;
+         const maxZoom = 14;
+         var map = L.map('map', {
+             minZoom: minZoom,
+             maxZoom: maxZoom,
+             zoomControl: false,
+         }).setView([55.53, -4.53], 6);         
+         function get_color(hclass, distance) {
+             if (hclass == "M") return "blue";
+             if (hclass == "A") return "green";
+             return "red";
+         };
+         var vectorTileStyling = {
+             network: function (properties, zoom) {
+                 var type = properties.class
+                 var color = "orange";
+                 if (type == "highway") {
+                     var hclass = 'X';
+                     if ("ref" in properties) hclass = properties.ref[0];
+                     color = get_color(hclass, null);
+                 }
+                 return ({fill: true,
+                          weight: 1.0,
+                          color: color,
+                          opacity: 1.0,
+                          zIndex: 1,
+                 });
+             },
+         };
+	       var mapUrl = "https://anisotropi4.github.io/parallel/tiles/{z}/{x}/{y}.pbf";
+         var mapVectorTileOptions = {
+			       rendererFactory: L.canvas.tile,
+             interactive: true,
+			       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ONS and National Records Scotland<a href="http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"> Open Government License</a>',
+             maxNativeZoom: maxZoom,
+             minZoom: minZoom,
+			       vectorTileLayerStyles: vectorTileStyling,       
+         }
+         var mapPbfLayer = L.vectorGrid.protobuf(mapUrl, mapVectorTileOptions).addTo(map);
+         var mapVectorTileOptions = {
+			       rendererFactory: L.canvas.tile,
+             interactive: true,
+			       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy;',
+             maxNativeZoom: maxZoom, // minZoom must be higher than minNativeZoom
+             minZoom: minZoom,
+			       vectorTileLayerStyles: vectorTileStyling,       
+         }
+         mapPbfLayer.bindPopup(function (layer) {
+             const lookup = {
+                 "electrified": "electrified",
+                 "voltage": "voltage",
+                 "ref": "reference",
+                 "maxspeed": "limit",
+             };
+             var p = layer.properties;
+             var name = p.name;
+             if (! ("name" in p)) {
+                 name = p.ref;
+                 delete p['ref'];
+             }
+             var popupContent = "<b>" + name + "</b>";
+             for (const [k, v] of Object.entries(p)) {
+                 if (k in lookup) {
+                     popupContent += "<br>" + lookup[k] + ": " + p[k];
+                 }
+             }
+             return popupContent;
+         });
+         var zoomcontrol = new L.Control.Zoom({ position: 'bottomright' }).addTo(map)
+	      </script>
+    </body>
+</html>

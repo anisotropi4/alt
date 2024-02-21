@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ ! -s output-all.json ]; then
+    pip install -r requirements.txt
+    ./osmnxget.py
+fi
+
+if [ ! -d tiles ]; then
+    bin/tippecanoe --no-tile-compression --force -l network -Z5 -z14 --coalesce-smallest-as-needed --extend-zooms-if-still-dropping --detect-shared-borders --coalesce --reorder --hilbert -e tiles output-all.json
+fi
