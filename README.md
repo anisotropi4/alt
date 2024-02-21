@@ -19,3 +19,7 @@ Create interactive [population density map](https://anisotropi4.github.io/distan
 
 Create map zoomable showing Network Model Engineering Line of Route (ELR) offsets
 
+## [fizzy-knitting](fizzy-knitting/README.md)
+
+Create map zoomable showing British [rail electrification](https://anisotropi4.github.io/fizzy-knitting/) using OpenStreetMap data
+
